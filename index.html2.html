@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Speed Notifier App - OpenStreetMap & Leaflet</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      text-align: center;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+    #info {
+      margin-top: 10px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Speed Notifier App</h2>
+  <div id="map"></div>
+  <div id="info">Speed: <span id="speed">Waiting for GPS...</span> km/h</div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    let map = L.map('map').setView([0, 0], 2); // Initial view
+    let marker;
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let prevLatLng = null;
+    let prevTime = null;
+
+    function calculateDistance(latlng1, latlng2) {
+      // Haversine formula
+      const R = 6371000; // Radius of Earth in meters
+      const toRad = x => x * Math.PI / 180;
+
+      const dLat = toRad(latlng2.lat - latlng1.lat);
+      const dLon = toRad(latlng2.lng - latlng1.lng);
+
+      const lat1 = toRad(latlng1.lat);
+      const lat2 = toRad(latlng2.lat);
+
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      return R * c; // distance in meters
+    }
+
+    function updateSpeed(position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const currentTime = Date.now();
+
+      const currentLatLng = { lat, lng };
+
+      if (!marker) {
+        marker = L.marker([lat, lng]).addTo(map);
+        map.setView([lat, lng], 17);
+      } else {
+        marker.setLatLng([lat, lng]);
+        map.panTo([lat, lng]);
+      }
+
+      if (prevLatLng && prevTime) {
+        const distance = calculateDistance(prevLatLng, currentLatLng); // meters
+        const timeDiff = (currentTime - prevTime) / 1000; // seconds
+
+        const speedMps = distance / timeDiff; // meters per second
+        const speedKph = (speedMps * 3.6).toFixed(2); // km/h
+
+        document.getElementById('speed').innerText = speedKph;
+      }
+
+      prevLatLng = currentLatLng;
+      prevTime = currentTime;
+    }
+
+    function errorHandler(err) {
+      document.getElementById('speed').innerText = 'Error: ' + err.message;
+    }
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.watchPosition(updateSpeed, errorHandler, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000
+      });
+    } else {
+      alert('Geolocation is not supported by your browser.');
+    }
+  </script>
+
+</body>
+</html>
