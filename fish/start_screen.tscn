@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cjb5y31fgdw5j"]
+
+[node name="StartScreen" type="Control" unique_id=1491415152]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Background" type="TextureRect" parent="." unique_id=1573599245]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0

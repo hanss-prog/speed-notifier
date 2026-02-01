@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dwk2rne6i18u4"]
+
+[ext_resource type="Script" uid="uid://dj82pwx1bontv" path="res://type.gd" id="1_nebis"]
+
+[node name="RodHealth" type="Node2D" unique_id=1364643418]
+
+[node name="Type" type="Node" parent="." unique_id=1373840469]
+script = ExtResource("1_nebis")
